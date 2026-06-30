@@ -12,8 +12,10 @@ from pathlib import Path
 try:
     from playwright.sync_api import sync_playwright
 except ImportError:
-    print("[!] playwright not installed. Run: pip install playwright && playwright install chromium")
-    sys.exit(1)
+    # 缺 playwright 时不要在 import 期 sys.exit —— 那抛的是 SystemExit,会绕过调用方
+    # (run_real_test.stage2)的 try/except,把整条分析管道带崩(报告已生成却退出码1)。
+    # 置空,等真正调用 render() 时再失败,由 stage2 的 try/except 正常跳过截图。
+    sync_playwright = None
 
 
 def render(ticker: str, selector: str = "#share-card", out_name: str = "share-card.png", scale: int = 2) -> Path:
